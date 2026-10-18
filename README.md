@@ -31,20 +31,6 @@ People visit the link once, then choose "Add to Home Screen" (iPhone/Android) or
 It then opens like a normal app with its own icon and works with no internet.
 Each person's data still stays on their own device. Nothing is uploaded, and nobody can see anyone else's words.
 
-## Two builds: with and without the Arabic word list
-
-Running `python3 build.py` makes two files in `dist/`:
-
-| File | Includes Arabic list | Use it for |
-|---|---|---|
-| `Badger Vocab.html` | Yes, 5,308 words | Your own use, and sharing privately with the department |
-| `Badger Vocab (no word list).html` | No | Posting publicly, e.g. on GitHub |
-
-The Arabic list (`data/arabic-words.js`) may come from a published source, so it isn't covered by
-Badger Vocab's license. `.gitignore` keeps it, and the full build, off GitHub automatically.
-The app works without it: Arabic simply starts empty, like every other language.
-Only remove it from `.gitignore` if you've confirmed you have the rights to publish it.
-
 ## Posting on GitHub
 
 1. Make a new repository on github.com (public or private).

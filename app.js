@@ -101,7 +101,7 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 function fromOld(old){const a=LS("ar");Object.assign(a.lv,old.lv||{});a.mine=(a.mine||[]).concat((old.mine||[]).map(m=>({w:m.ar,en:m.en,tr:m.tr||"",g:m.g||"My words"})))}
 try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(x)S=Object.assign(S,x)}catch(e){}
 try{const old=JSON.parse(localStorage.getItem("arabicMatch")||"null");if(old&&!S.migrated){fromOld(old);S.migrated=1;save()}}catch(e){}
-const DEF={fc:"20",ford:"mix",n:8,focus:"mix",mode:"match",dir:"t",hk:true,tr:true,auto:true,snd:"google"};S.o=Object.assign({},DEF,S.o);
+const DEF={qt:"0",fc:"20",ford:"mix",n:8,focus:"mix",mode:"match",dir:"t",hk:true,tr:true,auto:true,snd:"google"};S.o=Object.assign({},DEF,S.o);
 
 const allLangs=()=>LANGS.concat((S.custom||[]).map(x=>({c:x.c,n:x.n,nat:x.n,tts:x.tts,dev:x.tts||"",rtl:!!x.rtl,arab:false,custom:1})));
 const findLang=c=>allLangs().find(l=>l.c===c);
@@ -253,10 +253,11 @@ function syncOpts(){
  $("n").value=S.o.n;$("focus").value=S.o.focus;$("dir").value=S.o.dir;$("snd").value=S.o.snd;
  ["hk","tr","auto"].forEach(id=>$(id).checked=!!S.o[id]);
  const m=S.o.mode;$("ford").value=S.o.ford;document.querySelectorAll(".fcSel").forEach(s=>s.value=S.o.fc);
- $("hkWrap").hidden=!MARKS.has(cur.c);$("autoWrap").hidden=m!=="match";$("nWrap").hidden=m!=="match";
- ["dirWrap","fcWrap","ordWrap"].forEach(id=>$(id).hidden=m!=="cards");$("focusWrap").hidden=m==="list";
+ $("hkWrap").hidden=!MARKS.has(cur.c);$("autoWrap").hidden=m!=="match"&&m!=="quiz";$("nWrap").hidden=m!=="match";
+ ["dirWrap","ordWrap"].forEach(id=>$(id).hidden=m!=="cards");$("fcWrap").hidden=m!=="cards"&&m!=="quiz";$("qtWrap").hidden=m!=="quiz";$("focusWrap").hidden=m==="list";
+ document.querySelectorAll(".fcLbl").forEach(x=>x.textContent=m==="quiz"?"Cards in quiz":"Cards per deck");
  document.querySelectorAll("[data-opt]").forEach(el=>el.value=S.o[el.dataset.opt]);
- document.querySelectorAll("[data-show]").forEach(el=>{const s=el.dataset.show;el.hidden=s==="notlist"?m==="list":s!==m});
+ document.querySelectorAll("[data-show]").forEach(el=>{const s=el.dataset.show;el.hidden=s==="notlist"?m==="list":!s.split(" ").includes(m)});
  document.querySelectorAll('.seg button[data-mode="list"]').forEach(b=>b.textContent=cur&&cur.free?"Card list":"Word list");
 }
 document.querySelectorAll("[data-opt]").forEach(el=>el.onchange=()=>{const k=el.dataset.opt;let v=el.value;
@@ -306,8 +307,8 @@ function startPlay(){
  $("pTitle").textContent=cur.free?`Free Learn · ${cur.l.n}`:`${cur.l.n} · ${catName(cur.cat)}`;
  $("hear").hidden=!!cur.free&&!cur.l.tts&&!cur.l.dev;
  $("toGroups").textContent=cur.free?"← Deck":"← Groups";$("tapHint").hidden=$("hear").hidden;document.title=$("pTitle").textContent;
- const m=S.o.mode;$("mView").hidden=m!=="match";$("fView").hidden=m!=="cards";$("lView").hidden=m!=="list";
- if(m==="cards")newDeck();else if(m==="list")newList();else newRound();
+ const m=S.o.mode;$("mView").hidden=m!=="match";$("fView").hidden=m!=="cards";$("lView").hidden=m!=="list";$("qView").hidden=m!=="quiz";clearInterval(qz.timer);
+ if(m==="cards")newDeck();else if(m==="list")newList();else if(m==="quiz")newQuiz();else newRound();
 }
 
 /* matching */
@@ -427,6 +428,77 @@ function endDeck(){
  $("fMatch").onclick=()=>{const p=deck.slice(0,25);S.o.mode="match";save();syncOpts();$("mView").hidden=false;$("fView").hidden=true;
   pairs=p;missed=new Set();sel=null;done=0;mistakes=0;$("end").hidden=true;render()};
  ($("fCont")||$("fNext")).focus();
+}
+
+/* quiz: type the answer, Sporcle style */
+const QT=[["0","No limit"],["60","1 minute"],["120","2 minutes"],["180","3 minutes"],["300","5 minutes"],["600","10 minutes"],["900","15 minutes"]];
+document.querySelectorAll(".qtSel").forEach(s=>s.innerHTML=QT.map(([v,n])=>`<option value="${v}">${n}</option>`).join(""));
+// Ignore capitals, accents, vowel marks, punctuation, anything in (brackets) and a leading "the/a/an".
+const qnorm=s=>String(s).normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().replace(/\([^)]*\)|\[[^\]]*\]/g," ")
+ .replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/^(the|a|an) /,"");
+function qAnswers(i){                         // the whole back, plus each part split by ; , / or "or"
+ const back=W(i)[2]||"",set=new Set([qnorm(back)]);
+ back.split(/[;,/]|\s+or\s+/).forEach(p=>set.add(qnorm(p)));set.delete("");return set;
+}
+function lev(a,b){if(Math.abs(a.length-b.length)>1)return 2;const d=[...Array(b.length+1).keys()];
+ for(let i=1;i<=a.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=t}}return d[b.length]}
+const qz={items:[],ans:[],got:new Set(),sec:0,timer:null,done:true};
+function newQuiz(list){
+ clearInterval(qz.timer);
+ let L=list;if(!L){const n=S.o.fc==="all"?1e9:+S.o.fc;L=choose(n,false)}
+ const skipped=L.filter(i=>!qAnswers(i).size).length;
+ Object.assign(qz,{items:shuffle(L.filter(i=>qAnswers(i).size)),got:new Set(),sec:0,done:false,limit:+S.o.qt||0});
+ qz.ans=qz.items.map(qAnswers);
+ $("qEnd").hidden=true;$("qView").querySelector(".qbar").classList.remove("done");$("qInput").disabled=false;$("qInput").value="";$("qGive").hidden=false;
+ $("qMsg").textContent=skipped?`${skipped} card${skipped===1?"":"s"} with a picture-only back ${skipped===1?"was":"were"} left out, since there’s nothing to type.`:"";
+ if(!qz.items.length){$("qGrid").innerHTML='<p class="sub">No cards to quiz here. Quizzes need text on the back of each card. Also check the “Show me” setting.</p>';$("qInput").disabled=true;qStat();return}
+ $("qGrid").innerHTML=qz.items.map((i,k)=>`<div class="qt" data-k="${k}">${img(W(i)[4],"qimg")}${W(i)[0]?`<div class="qf" ${tAttr()}>${esc(disp(i))}</div>`:""}<div class="qa">?</div></div>`).join("");
+ qStat();qz.timer=setInterval(qTick,1000);
+ if(matchMedia("(hover:hover)").matches)$("qInput").focus();
+}
+const qClockText=()=>qz.limit?fmtClock(Math.max(0,qz.limit-qz.sec)):fmtClock(qz.sec);
+const fmtClock=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
+function qStat(){$("qScore").textContent=`${qz.got.size}/${qz.items.length}`;$("qClockL").firstChild.textContent=qz.limit?"Time left ":"Time ";$("qClock").textContent=qClockText()}
+function qTick(){
+ if($("vPlay").hidden||$("qView").hidden){clearInterval(qz.timer);return}
+ if(qz.done||document.hidden)return;qz.sec++;qStat();
+ if(qz.limit&&qz.sec>=qz.limit)qFinish("time");
+}
+function qMark(k,close){
+ qz.got.add(k);const i=qz.items[k],el=$("qGrid").querySelector(`.qt[data-k="${k}"]`);
+ el.classList.add("got","new");el.querySelector(".qa").textContent=W(i)[2];setTimeout(()=>el.classList.remove("new"),700);
+ $("qInput").value="";$("qMsg").textContent=(close?"✓ Close enough: ":"✓ ")+W(i)[2];qStat();
+ if(qz.got.size===qz.items.length)qFinish("all");
+}
+$("qInput").oninput=()=>{
+ if(qz.done)return;const v=qnorm($("qInput").value);if(!v)return;
+ const k=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&a.has(v));if(k>=0)qMark(k);
+};
+$("qInput").onkeydown=e=>{
+ if(e.key!=="Enter"||qz.done)return;e.preventDefault();const v=qnorm($("qInput").value);if(!v)return;
+ const k=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&[...a].some(x=>x.length>=5&&lev(x,v)<=1));
+ if(k>=0){qMark(k,true);return}
+ $("qMsg").textContent=qz.items.some((i,k)=>qz.got.has(k)&&qz.ans[k].has(v))?"You already got that one.":"✗ That’s not one of the answers.";
+ $("qInput").classList.add("bad");setTimeout(()=>$("qInput").classList.remove("bad"),400);
+};
+$("qGive").onclick=()=>{if(!qz.done&&(qz.got.size||confirm("Give up and see the answers?")))qFinish("gave")};
+function qFinish(why){
+ qz.done=true;clearInterval(qz.timer);$("qInput").disabled=true;$("qGive").hidden=true;$("qView").querySelector(".qbar").classList.add("done");
+ const missed=qz.items.filter((_,k)=>!qz.got.has(k)),n=qz.items.length,g=qz.got.size,pct=Math.round(g/n*100);
+ $("qGrid").querySelectorAll(".qt").forEach(el=>{const k=+el.dataset.k;if(!qz.got.has(k)){el.classList.add("miss");el.querySelector(".qa").textContent=W(qz.items[k])[2]}});
+ if(S.o.auto)missed.forEach(i=>{if(lvl(i)!==1)setLv(i,1)});
+ const key=(cur.free?"f:"+cur.deck.id:cur.c+":"+cur.cat)+":"+n,B=S.qbest||(S.qbest={}),old=B[key];
+ const better=!old||g>old.g||(g===old.g&&qz.sec<old.s);if(better){B[key]={g,s:qz.sec};save()}
+ const head=why==="all"?"🎉 You got them all!":why==="time"?"⏰ Time’s up!":"Quiz over";
+ const e=$("qEnd");
+ e.innerHTML=`<h3>${head}</h3><p>You got <b>${g} of ${n}</b> (${pct}%) in ${fmtClock(qz.sec)}.${better&&old?" That’s a new best!":old&&!better?` Your best is ${old.g} of ${n} in ${fmtClock(old.s)}.`:""}</p>${missed.length?`<p>You missed ${missed.length}. They’re shown in red on the board${S.o.auto?" and marked as “don’t know”":""}:</p>`:""}`;
+ missed.forEach(i=>e.appendChild(wordRow(i)));
+ const bt=document.createElement("div");bt.className="btns";
+ bt.innerHTML=`<button class="btn" id="qAgain">Try again</button>${missed.length&&missed.length<n?`<button class="btn alt" id="qMissed">Quiz me on the ${missed.length} I missed</button>`:""}<button class="btn alt" id="qNew">New quiz</button>`;
+ e.appendChild(bt);e.hidden=false;
+ const same=qz.items.slice();
+ $("qAgain").onclick=()=>newQuiz(same);if($("qMissed"))$("qMissed").onclick=()=>newQuiz(missed);$("qNew").onclick=()=>newQuiz();
+ e.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 /* word list */

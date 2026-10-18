@@ -3,7 +3,7 @@
 /* Offline support for the hosted web app.
    The first visit saves every file below on the device; after that the app opens with no internet.
    When you change any file, bump VERSION so devices download the new copy. */
-const VERSION = "badger-vocab-v6";
+const VERSION = "badger-vocab-v7";
 const FILES = ["./", "index.html", "style.css", "app.js", "free.js", "break.js", "chess-puzzles.js",
   "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
 

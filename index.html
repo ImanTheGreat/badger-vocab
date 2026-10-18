@@ -34,7 +34,7 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <h1>What would you like to study?</h1>
  <p class="sub">Pick one to get started. Tap the badger at the top any time to come back here.</p>
  <div class="startgrid">
-  <button class="sc" data-go="languages"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 3.9 5.8 3.9 9.5s-1.3 6.9-3.9 9.5c-2.6-2.6-3.9-5.8-3.9-9.5S9.4 5.1 12 2.5z"/></svg></span><span class="sct">Languages</span><span class="scd">Practice vocabulary in 48 languages with matching, flashcards and word lists.</span><span class="scc" id="scLang"></span></button>
+  <button class="sc" data-go="languages"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 3.9 5.8 3.9 9.5s-1.3 6.9-3.9 9.5c-2.6-2.6-3.9-5.8-3.9-9.5S9.4 5.1 12 2.5z"/></svg></span><span class="sct">Languages</span><span class="scd">Practice vocabulary in 48 languages with matching, flashcards, word lists and quizzes.</span><span class="scc" id="scLang"></span></button>
   <button class="sc" data-go="free"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3" width="15" height="15" rx="2.5"/><path d="M3 7v11.5A2.5 2.5 0 0 0 5.5 21H17"/><circle cx="11" cy="8.5" r="1.6"/><path d="m21 14-4.5-4.5L9 17"/></svg></span><span class="sct">Free Learn</span><span class="scd">Make your own flashcard decks about anything, with pictures if you like.</span><span class="scc" id="scFree"></span></button>
   <button class="sc" data-go="break"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h12v5a6 6 0 0 1-6 6h0a6 6 0 0 1-6-6V9z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 2.5c-.6 1 .6 2 0 3M12 2.5c-.6 1 .6 2 0 3"/></svg></span><span class="sct">Study Break</span><span class="scd">Take a breather with Sudoku and chess puzzles.</span><span class="scc">Sudoku · Chess</span></button>
  </div>
@@ -67,10 +67,11 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <button class="back" data-go="languages">← All languages</button>
  <h1 id="lTitle"></h1>
  <p class="sub" id="lInfo"></p>
- <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button></div>
+ <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button><button data-mode="quiz">Quiz</button></div>
  <div class="row">
   <label class="f" style="max-width:150px" id="nWrap">Words per round<input type="number" id="n" min="3" max="25" value="8"></label>
-  <label class="f" id="fcWrap" style="max-width:170px">Cards per deck<select id="fc" class="fcSel"></select></label>
+  <label class="f" id="fcWrap" style="max-width:170px"><span class="fcLbl">Cards per deck</span><select id="fc" class="fcSel"></select></label>
+  <label class="f" id="qtWrap" style="max-width:170px">Time limit<select data-opt="qt" class="qtSel"></select></label>
   <label class="f" id="focusWrap">Show me<select id="focus"><option value="mix">Mix, weak words more often</option><option value="1">Only don’t know</option><option value="2">Only semi-know</option><option value="3">Only know</option><option value="0">Only unrated</option></select></label>
   <label class="f" id="dirWrap">Flashcard front<select id="dir"><option value="t">Word → meaning</option><option value="e">Meaning → word</option></select></label>
   <label class="f" id="ordWrap">Card order<select id="ford"><option value="mix">Shuffled, weak words first</option><option value="list">In list order</option></select></label>
@@ -98,7 +99,7 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
 <section id="vPlay" hidden>
  <button class="back" id="toGroups">← Groups</button>
  <h1 id="pTitle"></h1>
- <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button></div>
+ <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button><button data-mode="quiz">Quiz</button></div>
  <div id="mView">
   <div class="bar"><span id="stat"></span><span id="tapHint">Tap a word to hear it</span></div>
   <div class="prog"><i id="prog"></i></div>
@@ -120,6 +121,16 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
   <p class="sub" id="lstat"></p>
   <div id="lwords"></div>
   <div class="btns" id="lmoreRow"><button class="btn alt" id="lmore">Show more</button></div>
+ </div>
+ <div id="qView">
+  <div class="qbar">
+   <div class="gstats"><span>Correct <b id="qScore">0/0</b></span><span id="qClockL">Time <b id="qClock">0:00</b></span></div>
+   <div class="qin"><input id="qInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type an answer" aria-label="Type an answer" dir="auto"><button class="btn alt" id="qGive">Give up</button></div>
+   <p class="qmsg" id="qMsg" aria-live="polite"></p>
+  </div>
+  <div class="qgrid" id="qGrid"></div>
+  <section class="end" id="qEnd" hidden aria-live="polite"></section>
+  <p class="hint">Type the answer for any card, in any order. Correct answers fill in as soon as you finish typing, so there’s no need to press Enter. Capital letters, accents and “the” don’t matter. If you’re one letter off, press Enter and it will still count.</p>
  </div>
  <p class="sub" id="vnote" hidden></p>
 </section>
@@ -146,10 +157,11 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <div class="btns" style="margin-top:0"><button class="btn alt sm" id="dRename">Rename</button><button class="btn alt sm" id="dExport">Share deck</button><button class="btn danger sm" id="dDelete">Delete deck</button></div>
  <div id="dPracticeBox">
   <h2>Practice</h2>
-  <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Card list</button></div>
+  <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Card list</button><button data-mode="quiz">Quiz</button></div>
   <div class="row">
    <label class="f" data-show="match" style="max-width:150px">Cards per round<input type="number" data-opt="n" min="3" max="25"></label>
-   <label class="f" data-show="cards" style="max-width:170px">Cards per deck<select class="fcSel"></select></label>
+   <label class="f" data-show="cards quiz" style="max-width:170px"><span class="fcLbl">Cards per deck</span><select class="fcSel"></select></label>
+   <label class="f" data-show="quiz" style="max-width:170px">Time limit<select data-opt="qt" class="qtSel"></select></label>
    <label class="f" data-show="notlist">Show me<select data-opt="focus"><option value="mix">Mix, weak cards more often</option><option value="1">Only don’t know</option><option value="2">Only semi-know</option><option value="3">Only know</option><option value="0">Only unrated</option></select></label>
    <label class="f" data-show="cards">Card front<select data-opt="dir"><option value="t">Front side first</option><option value="e">Back side first</option></select></label>
    <label class="f" data-show="cards">Card order<select data-opt="ford"><option value="mix">Shuffled, weak cards first</option><option value="list">In deck order</option></select></label>
@@ -224,7 +236,7 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <!-- Disclaimer: edit or remove this line if the university officially adopts the app. -->
  <p class="sub disclaimer">Badger Vocab is an independent project and is not affiliated with or endorsed by the University of Wisconsin-Madison.</p>
  <div class="panel"><h3 class="sm" style="margin-top:0">What it does</h3>
-  <p>Badger Vocab helps you practice vocabulary in 48 languages with a matching game, flashcards and word lists. In Free Learn you can make your own decks about any subject, with pictures. Study Break adds Sudoku and chess puzzles for a breather. Rate each card as “don’t know,” “semi-know” or “know,” and the ones you find hardest come back more often.</p></div>
+  <p>Badger Vocab helps you practice vocabulary in 48 languages with a matching game, flashcards, word lists and type-the-answer quizzes. In Free Learn you can make your own decks about any subject, with pictures. Study Break adds Sudoku and chess puzzles for a breather. Rate each card as “don’t know,” “semi-know” or “know,” and the ones you find hardest come back more often.</p></div>
  <div class="panel"><h3 class="sm" style="margin-top:0">Your privacy</h3>
   <p>Your words and progress are saved only on this device. There are no accounts, and nothing you type is uploaded. The one exception is read-aloud with the Google voice: when you’re online, the word being spoken is sent to Google Translate to get the audio. Choose “Device voice only” in a language’s settings to turn that off.</p></div>
  <div class="panel"><h3 class="sm" style="margin-top:0">Copyright and license</h3>

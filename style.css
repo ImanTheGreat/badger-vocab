@@ -318,3 +318,21 @@ body.arab .big.long{font-size:2rem}
 .sq .rk{top:2px;left:3px}.sq .fl{bottom:1px;right:3px}
 .czpromo{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700}
 .czpromo .pcb{border:1px solid var(--line);background:#EEDDC2;border-radius:10px;width:52px;height:52px;cursor:pointer}
+
+/* ===== Quiz ===== */
+.qbar{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0 2px;margin:0 -4px;padding-left:4px;padding-right:4px}
+.qin{display:flex;gap:8px}
+.qin input{flex:1;min-width:0;font-size:1.15rem;padding:12px 14px;border-width:2px}
+.qin input:focus{border-color:var(--accent);outline:none}
+.qin input.bad{border-color:var(--bad);animation:shake .35s}
+.qmsg{min-height:1.4em;margin:6px 0 8px;font-weight:600;color:var(--crimson)}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:4px}
+.qt{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:6px;text-align:center;min-height:96px;transition:border-color .2s,background .2s}
+.qimg{max-width:100%;max-height:78px;border-radius:6px;object-fit:contain;box-shadow:0 0 0 1px var(--line)}
+.qf{font-family:var(--tf);font-size:1.2rem;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+body.arab .qf{font-size:1.5rem}
+.qa{width:100%;border-top:2px dashed var(--line);padding-top:5px;font-weight:700;color:var(--muted);min-height:1.6em;overflow-wrap:anywhere;font-size:.95rem}
+.qt.got{border-color:var(--ok);background:var(--okbg)}.qt.got .qa{color:var(--ok);border-top-style:solid;border-color:var(--ok)}
+.qt.new{animation:pop .6s}
+.qt.miss{border-color:var(--bad)}.qt.miss .qa{color:var(--bad);border-top-style:solid;border-color:var(--bad)}
+.qbar.done{position:static}

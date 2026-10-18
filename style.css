@@ -336,3 +336,4 @@ body.arab .qf{font-size:1.5rem}
 .qt.new{animation:pop .6s}
 .qt.miss{border-color:var(--bad)}.qt.miss .qa{color:var(--bad);border-top-style:solid;border-color:var(--bad)}
 .qbar.done{position:static}
+.dgh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}.dgh h2 small{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;margin-left:6px}

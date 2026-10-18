@@ -85,12 +85,15 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <p class="sub" style="margin-top:14px">Tap a group to start.</p>
  <div class="legend"><span><i class="k3"></i>Know</span><span><i class="k2"></i>Semi-know</span><span><i class="k1"></i>Don’t know</span></div>
  <div id="groups"></div>
- <details class="panel" id="mine"><summary>Add and manage my words</summary>
+ <details class="panel" id="mine"><summary>Add, import and manage my words</summary>
   <div class="row" style="margin-top:12px"><label class="f"><span id="faLbl">Word</span><input id="fa" class="tgt"></label><label class="f">Meaning<input id="fe" placeholder="book"></label></div>
   <div class="row"><label class="f"><span id="ftLbl">Pronunciation (optional)</span><input id="ft"></label><label class="f">Group<input id="fg" list="glist" placeholder="My words"><datalist id="glist"></datalist></label></div>
   <div class="btns"><button class="btn" id="addb">Add word</button></div>
   <label class="f" style="margin-top:14px">Or paste many, one per line as “word : meaning” (or “word : meaning : pronunciation”). Tab-separated lines from a spreadsheet work too.<textarea id="bulk" rows="4"></textarea></label>
   <div class="btns"><button class="btn" id="bulkb">Add pasted words to the group above</button></div>
+  <h3 class="sm">Import a deck</h3>
+  <p class="sub" style="margin-top:2px">Add words from Badger Vocab deck files, such as one shared by a teacher or classmate, or exported with “Share deck” in Free Learn. Each deck becomes a group here: the front of each card becomes the word, and the back becomes its meaning. You can choose several files at once.</p>
+  <div class="btns" style="margin-top:6px"><label class="btn alt">Import deck files<input type="file" id="impLang" accept=".json,application/json" multiple hidden></label></div>
   <p class="sub" id="mmsg" aria-live="polite"></p><div id="gBox"></div><div id="mlist"></div>
  </details>
 </section>
@@ -141,11 +144,10 @@ try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
  <button class="back" data-go="">← Home</button>
  <h1>Free Learn</h1>
  <p class="sub">Make flashcard decks about anything: science terms, history dates, art, music, or people’s names and faces. Either side of a card can have text, a picture, or both.</p>
- <div class="btns" style="margin-top:4px"><button class="btn" id="newDeckB">+ New deck</button><label class="btn alt">Import a deck<input type="file" id="impDeck" accept=".json,application/json" hidden></label></div>
+ <div class="btns" style="margin-top:4px"><button class="btn" id="newDeckB">+ New deck</button><label class="btn alt">Import a deck<input type="file" id="impDeck" accept=".json,application/json" multiple hidden></label></div>
  <div class="panel" id="newDeckP" hidden><label class="f">Deck name<input id="ndName" placeholder="Biology: parts of a cell" maxlength="80"></label>
   <div class="btns"><button class="btn" id="ndCreate">Create deck</button><button class="btn alt" id="ndCancel">Cancel</button></div></div>
  <p class="sub" id="freeMsg" aria-live="polite"></p>
- <h2>My decks</h2>
  <div id="decks"></div>
 </section>
 

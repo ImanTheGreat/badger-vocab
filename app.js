@@ -113,7 +113,7 @@ function openLang(c){
  const l=findLang(c),b=BUILT[c];
  if(b&&!bCache[c])bCache[c]=b.w.map(w=>[w[0],c==="ar"?tl(w[0]):"",w[1],w[2]||""]);
  const B=bCache[c]||[];
- const M=LS(c).mine.map(m=>[m.w,m.tr||(c==="ar"?tl(m.w):""),m.en,""]);
+ const M=LS(c).mine.map(m=>[m.w,m.tr||(c==="ar"?tl(m.w):""),m.en,m.n||"",null,null,null,m.a||""]);
  cur={c,l,W:B.concat(M),nb:B.length,cats:b?b.c:[],cat:LS(c).cat||null};
  document.body.classList.toggle("arab",l.arab);
 }
@@ -275,7 +275,8 @@ $("n").onchange=()=>{S.o.n=Math.max(3,Math.min(25,+$("n").value||8));$("n").valu
 function addWord(w,en,tr,g){w=w.trim();en=en.trim();if(!w||!en)return false;LS(cur.c).mine.push({w,en,tr:(tr||"").trim(),g:(g||"").trim()||"My words"});return true}
 function renderMine(){
  const m=LS(cur.c).mine,box=$("mlist");box.innerHTML="";
- m.forEach((w,k)=>{const d=document.createElement("div");d.className="w";
+ const SHOW=300,from=Math.max(0,m.length-SHOW);
+ m.forEach((w,k)=>{if(k<from)return;const d=document.createElement("div");d.className="w";
   d.innerHTML=`<div><span class="tw" ${tAttr()}>${esc(w.w)}</span> <span class="en">${w.tr?esc(w.tr)+" · ":""}${esc(w.en)} · ${esc(w.g)}</span></div>`;
   const b=document.createElement("button");b.className="btn alt sm";b.textContent="Delete";
   b.onclick=()=>{m.splice(k,1);afterMine("Deleted.")};d.appendChild(b);box.appendChild(d)});
@@ -292,7 +293,7 @@ function renderMine(){
   del.onclick=()=>{if(!confirm(`Delete the group “${g}” and its ${n} word${n===1?"":"s"}? This can’t be undone.`))return;
    LS(cur.c).mine=m.filter(x=>x.g!==g);if(cur.cat==="m:"+g){cur.cat=null;LS(cur.c).cat=null}afterMine(`Deleted “${g}”.`)};
   bt.append(r,del);d.appendChild(bt);gb.appendChild(d)});
- if(m.length)gb.insertAdjacentHTML("beforeend",'<h3 class="sm">My words</h3>');
+ if(m.length)gb.insertAdjacentHTML("beforeend",`<h3 class="sm">My words</h3>${from?`<p class="sub">Showing your newest ${SHOW} of ${m.length.toLocaleString()} words. To see them all, open a group and choose Word list.</p>`:""}`);
 }
 function afterMine(t){save();const o=$("mine").open;openLang(cur.c);renderLang();$("mine").open=o||true;$("mmsg").textContent=t}
 $("addb").onclick=()=>{if(addWord($("fa").value,$("fe").value,$("ft").value,$("fg").value)){$("fa").value=$("fe").value=$("ft").value="";afterMine("Added.");$("fa").focus()}else $("mmsg").textContent="Enter both the word and its meaning."};
@@ -469,7 +470,8 @@ function qTick(){
 function qMark(k,close){
  qz.got.add(k);const i=qz.items[k],el=$("qGrid").querySelector(`.qt[data-k="${k}"]`);
  el.classList.add("got","new");el.querySelector(".qa").textContent=W(i)[2];setTimeout(()=>el.classList.remove("new"),700);
- $("qInput").value="";$("qMsg").textContent=(close?"✓ Close enough: ":"✓ ")+W(i)[2];qStat();
+ $("qInput").value="";const short=W(i)[2].replace(/\s*\([^)]*\)/g,"").split(";")[0].trim()||W(i)[2];
+ $("qMsg").textContent=(close?"✓ Close enough: ":"✓ ")+(short.length>60?short.slice(0,57)+"…":short);qStat();
  if(qz.got.size===qz.items.length)qFinish("all");
 }
 let qWait=null;

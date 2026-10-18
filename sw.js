@@ -4,7 +4,7 @@
    The first visit saves every file below on the device; after that the app opens with no internet.
    When you change any file, bump VERSION so devices download the new copy.
    Installed apps check for a new version each time they open, and switch to it right away. */
-const VERSION = "badger-vocab-v8";
+const VERSION = "badger-vocab-v10";
 const FILES = ["./", "index.html", "style.css", "app.js", "free.js", "break.js", "chess-puzzles.js",
   "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
 

@@ -92,10 +92,23 @@ function renderFreeHome(){
  document.title="Free Learn · Badger Vocab";
  const D=FS().decks.slice().sort((a,b)=>(b.used||b.made)-(a.used||a.made));
  if(!D.length){$("decks").innerHTML=`<div class="empty">No decks yet. Tap “+ New deck” to make your first one. A deck can be about anything: biology terms, history dates, famous paintings, or people’s names and faces.</div>`;return}
- $("decks").innerHTML=`<div class="ggrid">${D.map(d=>{const {n,k}=deckStats(d),t=n||1,p=x=>(k[x]/t*100).toFixed(1);
+ // Decks named "Something: name" are grouped under a "Something" heading (e.g. "Arabic: Food & Drink").
+ const card=(d,label)=>{const {n,k}=deckStats(d),t=n||1,p=x=>(k[x]/t*100).toFixed(1);
   const cover=deckCards(d.id).find(c=>c.fi||c.bi);
-  return `<button class="g deckc" data-id="${esc(d.id)}">${cover?`<span class="cover">${img(cover.fi||cover.bi,"")}</span>`:""}<span class="gt">${esc(d.name)}</span><span class="gc">${n} card${n===1?"":"s"} · ${k[3]} known</span><span class="gb"><i class="k3" style="width:${p(3)}%"></i><i class="k2" style="width:${p(2)}%"></i><i class="k1" style="width:${p(1)}%"></i></span></button>`}).join("")}</div>`;
+  return `<button class="g deckc" data-id="${esc(d.id)}">${cover?`<span class="cover">${img(cover.fi||cover.bi,"")}</span>`:""}<span class="gt">${esc(label)}</span><span class="gc">${n} card${n===1?"":"s"} · ${k[3]} known</span><span class="gb"><i class="k3" style="width:${p(3)}%"></i><i class="k2" style="width:${p(2)}%"></i><i class="k1" style="width:${p(1)}%"></i></span></button>`};
+ const pre=d=>{const m=d.name.match(/^([^:]{1,30}):\s+(.+)$/);return m?[m[1],m[2]]:[null,d.name]};
+ const groups=new Map(),solo=[];
+ for(const d of D){const [g]=pre(d);if(g&&D.filter(x=>pre(x)[0]===g).length>1){if(!groups.has(g))groups.set(g,[]);groups.get(g).push(d)}else solo.push(d)}
+ let h=solo.length?`<h2>My decks</h2><div class="ggrid">${solo.map(d=>card(d,d.name)).join("")}</div>`:"";
+ for(const [g,ds] of groups){ds.sort((a,b)=>b.made-a.made);
+  h+=`<div class="dgh"><h2>${esc(g)} <small>${ds.length} decks</small></h2><button class="btn danger sm" data-delgroup="${esc(g)}">Delete all</button></div><div class="ggrid">${ds.map(d=>card(d,pre(d)[1])).join("")}</div>`}
+ $("decks").innerHTML=h;
  document.querySelectorAll(".deckc").forEach(b=>b.onclick=()=>go("free/"+b.dataset.id));
+ document.querySelectorAll("[data-delgroup]").forEach(b=>b.onclick=()=>{
+  const g=b.dataset.delgroup,ds=FS().decks.filter(d=>pre(d)[0]===g);
+  if(!confirm(`Delete all ${ds.length} “${g}” decks and their cards? This can’t be undone.`))return;
+  for(const d of ds){deckCards(d.id).forEach(c=>{IDB.del(c.fi);IDB.del(c.bi);delete LS("free").lv["c:"+c.id]});FS().cards=FS().cards.filter(c=>c.deck!==d.id)}
+  FS().decks=FS().decks.filter(d=>pre(d)[0]!==g);save();renderFreeHome();$("freeMsg").textContent=`Deleted the “${g}” decks.`});
 }
 $("newDeckB").onclick=()=>{$("newDeckP").hidden=false;$("ndName").focus()};
 $("ndCancel").onclick=()=>{$("newDeckP").hidden=true;$("ndName").value=""};
@@ -199,19 +212,59 @@ $("dExport").onclick=async()=>{
  download(d.name.replace(/[^\p{L}\p{N}]+/gu,"-").replace(/^-|-$/g,"")+".badgerdeck.json",out);
  $("ceMsg").textContent="Deck saved as a file. Send it to anyone, and they can add it with “Import a deck” in Free Learn.";
 };
+// Reads one or more deck files. Each file can hold a single deck or a bundle ({badgerVocabBundle, decks:[...]}).
+async function readDecks(files){
+ const decks=[],bad=[];
+ for(const f of files){
+  let list;
+  try{const j=JSON.parse(await f.text());list=j.badgerVocabBundle&&Array.isArray(j.decks)?j.decks:[j]}catch(err){bad.push(f.name);continue}
+  for(const j of list){if(j&&j.badgerVocabDeck&&Array.isArray(j.cards))decks.push(j);else bad.push(f.name)}
+ }
+ return {decks,bad:[...new Set(bad)]};
+}
+const badMsg=bad=>bad.length?` ${bad.join(", ")} ${bad.length===1?"isn’t a Badger Vocab deck":"weren’t Badger Vocab decks"}.`:"";
 $("impDeck").onchange=async e=>{
- const f=e.target.files[0];e.target.value="";if(!f)return;
- try{
-  const j=JSON.parse(await f.text());if(!j.badgerVocabDeck||!Array.isArray(j.cards))throw 0;
-  let name=String(j.name||"Imported deck"),k=2;while(FS().decks.some(d=>d.name===name))name=`${j.name} (${k++})`;
-  const d={id:newId(),name,voice:String(j.voice||""),made:Date.now()};
-  for(const c of j.cards){
-   const card={id:newId(),deck:d.id,f:String(c.f||""),b:String(c.b||""),a:String(c.a||""),fi:null,bi:null};
-   for(const s of ["fi","bi"])if(typeof c[s]==="string"&&c[s].startsWith("data:image/")&&IDB.ok){const id=newId();await IDB.put(id,await fromDataURL(c[s]));card[s]=id}
-   if((card.f||card.fi)&&(card.b||card.bi))FS().cards.push(card);
+ const files=[...e.target.files];e.target.value="";if(!files.length)return;
+ const added=[];let base=Date.now(),cards=0;
+ $("freeMsg").textContent="Importing…";
+ const {decks,bad}=await readDecks(files);
+ {
+  for(const j of decks){
+   let name=String(j.name||"Imported deck"),k=2;while(FS().decks.some(d=>d.name===name))name=`${j.name} (${k++})`;
+   const d={id:newId(),name,voice:String(j.voice||""),made:base--};   // keeps the file’s deck order
+   for(const c of j.cards){
+    const card={id:newId(),deck:d.id,f:String(c.f||""),b:String(c.b||""),a:String(c.a||""),fi:null,bi:null};
+    for(const s of ["fi","bi"])if(typeof c[s]==="string"&&c[s].startsWith("data:image/")&&IDB.ok){const id=newId();await IDB.put(id,await fromDataURL(c[s]));card[s]=id}
+    if((card.f||card.fi)&&(card.b||card.bi)){FS().cards.push(card);cards++}
+   }
+   FS().decks.push(d);added.push(name);
   }
-  FS().decks.push(d);save();$("freeMsg").textContent=`Added “${name}”.`;renderFreeHome();
- }catch(err){$("freeMsg").textContent="That file isn’t a Badger Vocab deck."}
+ }
+ save();renderFreeHome();
+ $("freeMsg").textContent=(added.length===1?`Added “${added[0]}”.`:added.length?`Added ${added.length} decks (${cards.toLocaleString()} cards).`:"")+
+  badMsg(bad);
+};
+
+/* ---------- import a deck into a language (Languages → a language → Add, import and manage) ---------- */
+// Each deck becomes a group of "my words": card front = the word, card back = its meaning.
+$("impLang").onchange=async e=>{
+ const files=[...e.target.files];e.target.value="";if(!files.length||!cur||cur.free)return;
+ $("mmsg").textContent="Importing…";
+ const {decks,bad}=await readDecks(files),mine=LS(cur.c).mine,prefix=new RegExp("^"+cur.l.n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\s*:\\s*","i");
+ let added=0,dupes=0,pics=0;const groups=new Set();
+ for(const j of decks){
+  const g=String(j.name||"Imported").replace(prefix,"").replace(/^[^:]{1,30}:\s+/,"").trim()||"Imported";
+  const have=new Set(mine.filter(x=>x.g===g).map(x=>x.w+"|"+x.en));
+  for(const c of j.cards){
+   let w=String(c.f||"").trim(),en=String(c.b||"").trim();
+   if(!w||!en){if(c.fi||c.bi)pics++;continue}            // picture-only cards can’t become words
+   let n="";const m=en.match(/\s*\((?:pl\.|forms:)\s*([^)]+)\)\s*$/);if(m){n=m[1].trim();en=en.slice(0,m.index).trim()}
+   if(have.has(w+"|"+en)){dupes++;continue}
+   have.add(w+"|"+en);mine.push({w,en,tr:"",g,n,a:String(c.a||"")});added++;groups.add(g);
+  }
+ }
+ afterMine((added?`Added ${added.toLocaleString()} word${added===1?"":"s"} in ${groups.size} group${groups.size===1?"":"s"}.`:"No new words added.")+
+  (dupes?` ${dupes.toLocaleString()} ${dupes===1?"was":"were"} already there.`:"")+(pics?` ${pics} picture-only card${pics===1?"":"s"} skipped (Free Learn can show those).`:"")+badMsg(bad));
 };
 
 /* ---------- full backups now include pictures ---------- */

@@ -5,7 +5,7 @@
 
   Routes:  #break         menu
            #break/sudoku  Sudoku: fresh puzzles with exactly one solution, pen and pencil, scoring
-           #break/chess   Chess puzzles from the Lichess open database (data/chess-puzzles.js), Elo rating
+           #break/chess   Chess puzzles from the Lichess open database (chess-puzzles.js), Elo rating
   Saved in S.brk (localStorage) with everything else.
 */
 const BRK=()=>S.brk||(S.brk={});

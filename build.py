@@ -46,15 +46,15 @@ def build(include_words, out_name):
     assert words_tag in html, f"missing {words_tag} in index.html"
     html = html.replace(words_tag, inline_script(read(WORDS)) if include_words else "")
 
-    for js in ("data/chess-puzzles.js", "app.js", "free.js", "break.js"):
+    for js in ("chess-puzzles.js", "app.js", "free.js", "break.js"):
         tag = f'<script src="{js}"></script>'
         assert tag in html, f"missing {tag} in index.html"
         html = html.replace(tag, inline_script(read(js)))
 
     # Icons become data URLs; the manifest only works on a website, so drop it here.
-    svg = "data:image/svg+xml;base64," + base64.b64encode((ROOT / "icons/icon.svg").read_bytes()).decode()
-    png = "data:image/png;base64," + base64.b64encode((ROOT / "icons/icon-180.png").read_bytes()).decode()
-    html = html.replace('"icons/icon.svg"', f'"{svg}"').replace('"icons/icon-180.png"', f'"{png}"')
+    svg = "data:image/svg+xml;base64," + base64.b64encode((ROOT / "icon.svg").read_bytes()).decode()
+    png = "data:image/png;base64," + base64.b64encode((ROOT / "icon-180.png").read_bytes()).decode()
+    html = html.replace('"icon.svg"', f'"{svg}"').replace('"icon-180.png"', f'"{png}"')
     html = html.replace('<link rel="manifest" href="manifest.webmanifest">\n', "")
 
     DIST.mkdir(exist_ok=True)

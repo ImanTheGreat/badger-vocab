@@ -31,6 +31,20 @@ People visit the link once, then choose "Add to Home Screen" (iPhone/Android) or
 It then opens like a normal app with its own icon and works with no internet.
 Each person's data still stays on their own device. Nothing is uploaded, and nobody can see anyone else's words.
 
+## Two builds: with and without the Arabic word list
+
+Running `python3 build.py` makes two files in `dist/`:
+
+| File | Includes Arabic list | Use it for |
+|---|---|---|
+| `Badger Vocab.html` | Yes, 5,308 words | Your own use, and sharing privately with the department |
+| `Badger Vocab (no word list).html` | No | Posting publicly, e.g. on GitHub |
+
+The Arabic list (`data/arabic-words.js`) may come from a published source, so it isn't covered by
+Badger Vocab's license. `.gitignore` keeps it, and the full build, off GitHub automatically.
+The app works without it: Arabic simply starts empty, like every other language.
+Only remove it from `.gitignore` if you've confirmed you have the rights to publish it.
+
 ## Posting on GitHub
 
 1. Make a new repository on github.com (public or private).
@@ -48,6 +62,8 @@ when you're online, the single word being spoken is sent to Google Translate to 
 Choose "Device voice only" in settings to keep everything on the device.
 
 ## Files
+Everything the website needs sits at the top level, with no folders, so the files can be uploaded to GitHub by selecting them all and dragging them in. The only folder, `data/`, holds the private Arabic word list and is never uploaded.
+
 
 | File | What it is |
 |---|---|
@@ -56,9 +72,9 @@ Choose "Device voice only" in settings to keep everything on the device.
 | `app.js` | All app logic. There's a map of the file at the top |
 | `free.js` | The start menu and Free Learn (your own decks, with pictures) |
 | `break.js` | Study Break: Sudoku (generator, pen and pencil, scoring) and chess puzzles (rules engine, Elo rating) |
-| `data/chess-puzzles.js` | 999 rated puzzles from the Lichess open puzzle database (public domain, CC0) |
+| `chess-puzzles.js` | 999 rated puzzles from the Lichess open puzzle database (public domain, CC0) |
 | `data/arabic-words.js` | The built-in Arabic frequency list (private; see above) |
-| `manifest.webmanifest`, `sw.js`, `icons/` | Make it installable and work offline when hosted |
+| `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-*.png` | Make it installable and work offline when hosted |
 | `build.py` | Bundles everything into the single files in `dist/` |
 | `themes.py` | Generates the color themes and checks they are readable |
 | `LICENSE.md` | The full license terms |

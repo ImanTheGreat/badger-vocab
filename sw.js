@@ -3,9 +3,9 @@
 /* Offline support for the hosted web app.
    The first visit saves every file below on the device; after that the app opens with no internet.
    When you change any file, bump VERSION so devices download the new copy. */
-const VERSION = "badger-vocab-v5";
-const FILES = ["./", "index.html", "style.css", "app.js", "free.js", "break.js", "data/chess-puzzles.js",
-  "manifest.webmanifest", "icons/icon.svg", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png"];
+const VERSION = "badger-vocab-v6";
+const FILES = ["./", "index.html", "style.css", "app.js", "free.js", "break.js", "chess-puzzles.js",
+  "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)

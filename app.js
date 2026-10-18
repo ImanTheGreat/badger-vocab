@@ -438,7 +438,9 @@ const qnorm=s=>String(s).normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().re
  .replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/^(the|a|an) /,"");
 function qAnswers(i){                         // the whole back, plus each part split by ; , / or "or"
  const back=W(i)[2]||"",set=new Set([qnorm(back)]);
- back.split(/[;,/]|\s+or\s+/).forEach(p=>set.add(qnorm(p)));set.delete("");return set;
+ back.split(/[;,/]|\s+or\s+/).forEach(p=>set.add(qnorm(p)));
+ String(W(i)[7]||"").split(/[;,/]/).forEach(p=>set.add(qnorm(p)));  // Free Learn “also accept” answers
+ set.delete("");return set;
 }
 function lev(a,b){if(Math.abs(a.length-b.length)>1)return 2;const d=[...Array(b.length+1).keys()];
  for(let i=1;i<=a.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=t}}return d[b.length]}
@@ -470,12 +472,18 @@ function qMark(k,close){
  $("qInput").value="";$("qMsg").textContent=(close?"✓ Close enough: ":"✓ ")+W(i)[2];qStat();
  if(qz.got.size===qz.items.length)qFinish("all");
 }
+let qWait=null;
 $("qInput").oninput=()=>{
- if(qz.done)return;const v=qnorm($("qInput").value);if(!v)return;
- const k=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&a.has(v));if(k>=0)qMark(k);
+ clearTimeout(qWait);if(qz.done)return;const v=qnorm($("qInput").value);if(!v)return;
+ const k=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&a.has(v));if(k<0)return;
+ // "Niger" could be the start of "Nigeria", "us" of "usa": wait a moment in case more is coming.
+ const longer=qz.ans.some((a,j)=>!qz.got.has(j)&&[...a].some(x=>x!==v&&x.startsWith(v)));
+ if(!longer){qMark(k);return}
+ qWait=setTimeout(()=>{if(!qz.done&&!qz.got.has(k)&&qnorm($("qInput").value)===v)qMark(k)},900);
 };
 $("qInput").onkeydown=e=>{
- if(e.key!=="Enter"||qz.done)return;e.preventDefault();const v=qnorm($("qInput").value);if(!v)return;
+ if(e.key!=="Enter"||qz.done)return;e.preventDefault();clearTimeout(qWait);const v=qnorm($("qInput").value);if(!v)return;
+ const ex=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&a.has(v));if(ex>=0){qMark(ex);return}
  const k=qz.ans.findIndex((a,k)=>!qz.got.has(k)&&[...a].some(x=>x.length>=5&&lev(x,v)<=1));
  if(k>=0){qMark(k,true);return}
  $("qMsg").textContent=qz.items.some((i,k)=>qz.got.has(k)&&qz.ans[k].has(v))?"You already got that one.":"✗ That’s not one of the answers.";
@@ -552,7 +560,12 @@ applyTheme();
 function net(){$("netBadge").hidden=navigator.onLine}
 window.addEventListener("online",net);window.addEventListener("offline",net);net();
 // When the app is hosted on a website, a service worker saves it so it opens with no internet.
-if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+ // If a new version arrives right as the app opens, switch to it straight away instead of on the next launch.
+ const hadSW=!!navigator.serviceWorker.controller,opened=Date.now();let swapped=false;
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{if(hadSW&&!swapped&&Date.now()-opened<15000){swapped=true;location.reload()}});
+ navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
+}
 
 /* ---------- start ---------- */
 // Wait until free.js has loaded too.

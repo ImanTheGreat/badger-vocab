@@ -69,7 +69,7 @@ function openDeck(d){
  const v=findLang(d.voice||"");
  cur={c:"free",free:true,deck:d,cat:"*",nb:0,cats:[],
   l:{c:"free",n:d.name,nat:"",tts:v?v.tts:"",dev:v?v.dev:"",rtl:false,arab:!!(v&&v.arab)},
-  W:deckCards(d.id).map(c=>[c.f||"","",c.b||"","",c.fi||null,c.bi||null,c.id])};
+  W:deckCards(d.id).map(c=>[c.f||"","",c.b||"","",c.fi||null,c.bi||null,c.id,c.a||""])};
  document.body.classList.toggle("arab",cur.l.arab);
 }
 
@@ -149,23 +149,23 @@ function renderPick(side){
 function resetEditor(keepTemp){
  if(!keepTemp)ed.temp.forEach(id=>IDB.del(id));
  ed={card:null,fi:null,bi:null,temp:new Set()};
- $("ceF").value=$("ceB").value="";$("ceSave").textContent="Add card";$("ceCancel").hidden=true;$("ceSum").textContent="Add a card";
+ $("ceF").value=$("ceB").value=$("ceA").value="";$("ceSave").textContent="Add card";$("ceCancel").hidden=true;$("ceSum").textContent="Add a card";
  renderPick("fi");renderPick("bi");
 }
 $("ceSave").onclick=()=>{
- const f=$("ceF").value.trim(),b=$("ceB").value.trim();
+ const f=$("ceF").value.trim(),b=$("ceB").value.trim(),a=$("ceA").value.trim();
  if(!f&&!ed.fi){$("ceMsg").textContent="Add some text or a picture to the front.";return}
  if(!b&&!ed.bi){$("ceMsg").textContent="Add some text or a picture to the back.";return}
  if(ed.card){
   const c=ed.card;if(c.fi&&c.fi!==ed.fi)IDB.del(c.fi);if(c.bi&&c.bi!==ed.bi)IDB.del(c.bi);
-  Object.assign(c,{f,b,fi:ed.fi,bi:ed.bi});$("ceMsg").textContent="Card updated.";
- }else{FS().cards.push({id:newId(),deck:cur.deck.id,f,b,fi:ed.fi,bi:ed.bi});$("ceMsg").textContent="Card added."}
+  Object.assign(c,{f,b,a,fi:ed.fi,bi:ed.bi});$("ceMsg").textContent="Card updated.";
+ }else{FS().cards.push({id:newId(),deck:cur.deck.id,f,b,a,fi:ed.fi,bi:ed.bi});$("ceMsg").textContent="Card added."}
  save();resetEditor(true);openDeck(cur.deck);renderDeck();$("ceF").focus();
 };
 $("ceCancel").onclick=()=>{resetEditor();$("ceMsg").textContent=""};
 function editCard(c){
  resetEditor();ed.card=c;ed.fi=c.fi||null;ed.bi=c.bi||null;
- $("ceF").value=c.f||"";$("ceB").value=c.b||"";$("ceSave").textContent="Save changes";$("ceCancel").hidden=false;$("ceSum").textContent="Edit card";
+ $("ceF").value=c.f||"";$("ceB").value=c.b||"";$("ceA").value=c.a||"";$("ceSave").textContent="Save changes";$("ceCancel").hidden=false;$("ceSum").textContent="Edit card";
  renderPick("fi");renderPick("bi");$("cardEd").open=true;$("cardEd").scrollIntoView({behavior:"smooth",block:"start"});$("ceF").focus();
 }
 function renderCards(){
@@ -195,7 +195,7 @@ async function pic(id){if(!id)return null;try{const b=await IDB.get(id);return b
 $("dExport").onclick=async()=>{
  const d=cur.deck,cs=deckCards(d.id),out={badgerVocabDeck:1,name:d.name,voice:d.voice||"",cards:[]};
  $("ceMsg").textContent="Preparing the deck file…";
- for(const c of cs)out.cards.push({f:c.f,b:c.b,fi:await pic(c.fi),bi:await pic(c.bi)});
+ for(const c of cs)out.cards.push({f:c.f,b:c.b,a:c.a||"",fi:await pic(c.fi),bi:await pic(c.bi)});
  download(d.name.replace(/[^\p{L}\p{N}]+/gu,"-").replace(/^-|-$/g,"")+".badgerdeck.json",out);
  $("ceMsg").textContent="Deck saved as a file. Send it to anyone, and they can add it with “Import a deck” in Free Learn.";
 };
@@ -206,7 +206,7 @@ $("impDeck").onchange=async e=>{
   let name=String(j.name||"Imported deck"),k=2;while(FS().decks.some(d=>d.name===name))name=`${j.name} (${k++})`;
   const d={id:newId(),name,voice:String(j.voice||""),made:Date.now()};
   for(const c of j.cards){
-   const card={id:newId(),deck:d.id,f:String(c.f||""),b:String(c.b||""),fi:null,bi:null};
+   const card={id:newId(),deck:d.id,f:String(c.f||""),b:String(c.b||""),a:String(c.a||""),fi:null,bi:null};
    for(const s of ["fi","bi"])if(typeof c[s]==="string"&&c[s].startsWith("data:image/")&&IDB.ok){const id=newId();await IDB.put(id,await fromDataURL(c[s]));card[s]=id}
    if((card.f||card.fi)&&(card.b||card.bi))FS().cards.push(card);
   }

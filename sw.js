@@ -2,13 +2,14 @@
    Required Notice: Copyright (c) 2026 Iman Lloyd. Badger Vocab was made by Iman Lloyd as a gift to the University of Wisconsin-Madison Language Department. */
 /* Offline support for the hosted web app.
    The first visit saves every file below on the device; after that the app opens with no internet.
-   When you change any file, bump VERSION so devices download the new copy. */
-const VERSION = "badger-vocab-v7";
+   When you change any file, bump VERSION so devices download the new copy.
+   Installed apps check for a new version each time they open, and switch to it right away. */
+const VERSION = "badger-vocab-v8";
 const FILES = ["./", "index.html", "style.css", "app.js", "free.js", "break.js", "chess-puzzles.js",
   "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))  // always fetch fresh copies
     // The Arabic word list is optional (left out of the public GitHub copy), so a missing file is fine.
     .then(() => c.add("data/arabic-words.js").catch(() => {})))
     .then(() => self.skipWaiting()));

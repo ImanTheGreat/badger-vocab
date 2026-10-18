@@ -1,0 +1,10 @@
+# Kept off GitHub on purpose:
+# The Arabic word list may come from a published source that isn't Iman's to share publicly.
+# Delete the next line only if you have confirmed you have the rights to publish it.
+data/arabic-words.js
+
+# The full single-file build contains that list too.
+dist/Badger Vocab.html
+
+.DS_Store
+__pycache__/

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--
+  Badger Vocab
+  Copyright (c) 2026 Iman Lloyd. Licensed under the PolyForm Noncommercial License 1.0.0 (see LICENSE.md).
+  Required Notice: Copyright (c) 2026 Iman Lloyd. Badger Vocab was made by Iman Lloyd as a gift to the University of Wisconsin-Madison Language Department.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#A50034">
+<meta name="description" content="Private, offline vocabulary practice with matching and flashcards.">
+<title>Badger Vocab</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+<script>
+// Apply the saved color theme before the page draws, so it never flashes the wrong colors.
+try{var o=(JSON.parse(localStorage.getItem("vocabGame")||"{}").o)||{};
+ document.documentElement.setAttribute("data-theme",o.theme||"red");document.documentElement.setAttribute("data-look",o.look||"auto")}catch(e){}
+</script>
+</head>
+<body>
+<header class="top"><div><a href="#" aria-label="Badger Vocab home"><svg viewBox="96 96 320 344" aria-hidden="true"><path d="M256 430 L196 410 L124 310 L104 200 L124 104 L184 146 L256 132 L328 146 L388 104 L408 200 L388 310 L316 410 Z" fill="#fff"/><path d="M130 126 L170 152 L140 186 Z M382 126 L342 152 L372 186 Z M186 150 L232 140 L240 336 L216 378 L172 306 L152 214 Z M326 150 L280 140 L272 336 L296 378 L340 306 L360 214 Z" style="fill:var(--hd1)"/><circle cx="200" cy="262" r="12" fill="#fff"/><circle cx="312" cy="262" r="12" fill="#fff"/><ellipse cx="256" cy="402" rx="34" ry="20" style="fill:var(--hd1)"/></svg>Badger Vocab</a><span class="hr"><span class="off" id="netBadge" hidden>Offline</span><button class="tb" id="themeB" aria-expanded="false" aria-controls="themePop" aria-label="Color theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2.2a1.8 1.8 0 0 0-1.3 3.1A1.8 1.8 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1.2" fill="currentColor"/><circle cx="12" cy="7" r="1.2" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1.2" fill="currentColor"/></svg>Theme</button><a class="ab" href="#about">About</a></span>
+ <div class="themepop" id="themePop" role="dialog" aria-label="Color theme" hidden>
+  <h3>Color</h3><div class="sw" id="swatches"></div>
+  <h3>Brightness</h3><div class="looks" id="looks"><button data-look="auto">Automatic</button><button data-look="light">Light</button><button data-look="dark">Dark</button></div>
+ </div></div></header>
+<main>
+
+<!-- START MENU -->
+<section id="vStart" hidden>
+ <h1>What would you like to study?</h1>
+ <p class="sub">Pick one to get started. Tap the badger at the top any time to come back here.</p>
+ <div class="startgrid">
+  <button class="sc" data-go="languages"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 3.9 5.8 3.9 9.5s-1.3 6.9-3.9 9.5c-2.6-2.6-3.9-5.8-3.9-9.5S9.4 5.1 12 2.5z"/></svg></span><span class="sct">Languages</span><span class="scd">Practice vocabulary in 48 languages with matching, flashcards and word lists.</span><span class="scc" id="scLang"></span></button>
+  <button class="sc" data-go="free"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3" width="15" height="15" rx="2.5"/><path d="M3 7v11.5A2.5 2.5 0 0 0 5.5 21H17"/><circle cx="11" cy="8.5" r="1.6"/><path d="m21 14-4.5-4.5L9 17"/></svg></span><span class="sct">Free Learn</span><span class="scd">Make your own flashcard decks about anything, with pictures if you like.</span><span class="scc" id="scFree"></span></button>
+  <button class="sc" data-go="break"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h12v5a6 6 0 0 1-6 6h0a6 6 0 0 1-6-6V9z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 2.5c-.6 1 .6 2 0 3M12 2.5c-.6 1 .6 2 0 3"/></svg></span><span class="sct">Study Break</span><span class="scd">Take a breather with Sudoku and chess puzzles.</span><span class="scc">Sudoku · Chess</span></button>
+ </div>
+</section>
+
+<!-- HOME -->
+<section id="vHome" hidden>
+ <button class="back" data-go="">← Home</button>
+ <h1>Choose a language</h1>
+ <p class="sub">Pick a language to study. Your saved words, groups and progress are kept separately for each one.</p>
+ <div id="homeMine"></div>
+ <h2 id="moreH">Start a new language</h2>
+ <div class="lgrid" id="langs"></div>
+ <details class="panel"><summary>Add a language that isn’t listed</summary>
+  <div class="row" style="margin-top:12px"><label class="f">Language name<input id="clName" placeholder="Welsh"></label><label class="f">Google Translate code (for pronunciation)<input id="clCode" placeholder="cy"></label></div>
+  <div class="opts"><label><input type="checkbox" id="clRtl"> Written right to left</label></div>
+  <div class="btns"><button class="btn" id="clAdd">Add language</button></div>
+  <p class="sub" id="clMsg" aria-live="polite"></p><div id="clList"></div>
+ </details>
+ <details class="panel"><summary>Backup</summary>
+  <p class="sub">Everything is saved in this browser on this device. Export a backup to keep a copy or move it to another device.</p>
+  <p class="sub">Privacy: nothing you type is sent anywhere. The only thing that ever leaves your device is the single word being read aloud when the Google voice is on and you’re online. Choose “Device voice only” to keep everything on your device.</p>
+  <div class="btns"><button class="btn alt" id="exp">Export backup</button><label class="btn alt">Import backup<input type="file" id="imp" accept=".json" hidden></label></div>
+  <p class="sub" id="bMsg" aria-live="polite"></p>
+ </details>
+</section>
+
+<!-- LANGUAGE / GROUPS -->
+<section id="vLang" hidden>
+ <button class="back" data-go="languages">← All languages</button>
+ <h1 id="lTitle"></h1>
+ <p class="sub" id="lInfo"></p>
+ <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button></div>
+ <div class="row">
+  <label class="f" style="max-width:150px" id="nWrap">Words per round<input type="number" id="n" min="3" max="25" value="8"></label>
+  <label class="f" id="fcWrap" style="max-width:170px">Cards per deck<select id="fc" class="fcSel"></select></label>
+  <label class="f" id="focusWrap">Show me<select id="focus"><option value="mix">Mix, weak words more often</option><option value="1">Only don’t know</option><option value="2">Only semi-know</option><option value="3">Only know</option><option value="0">Only unrated</option></select></label>
+  <label class="f" id="dirWrap">Flashcard front<select id="dir"><option value="t">Word → meaning</option><option value="e">Meaning → word</option></select></label>
+  <label class="f" id="ordWrap">Card order<select id="ford"><option value="mix">Shuffled, weak words first</option><option value="list">In list order</option></select></label>
+ </div>
+ <div class="opts">
+  <label id="hkWrap"><input type="checkbox" id="hk" checked> Vowel marks</label>
+  <label><input type="checkbox" id="tr" checked> Pronunciation</label>
+  <label id="autoWrap"><input type="checkbox" id="auto" checked> Auto-mark misses as don’t know</label>
+  <label>Read aloud <select id="snd"><option value="google">Google voice (online), device voice (offline)</option><option value="device">Device voice only</option><option value="off">Off</option></select></label>
+ </div>
+ <p class="sub" style="margin-top:14px">Tap a group to start.</p>
+ <div class="legend"><span><i class="k3"></i>Know</span><span><i class="k2"></i>Semi-know</span><span><i class="k1"></i>Don’t know</span></div>
+ <div id="groups"></div>
+ <details class="panel" id="mine"><summary>Add and manage my words</summary>
+  <div class="row" style="margin-top:12px"><label class="f"><span id="faLbl">Word</span><input id="fa" class="tgt"></label><label class="f">Meaning<input id="fe" placeholder="book"></label></div>
+  <div class="row"><label class="f"><span id="ftLbl">Pronunciation (optional)</span><input id="ft"></label><label class="f">Group<input id="fg" list="glist" placeholder="My words"><datalist id="glist"></datalist></label></div>
+  <div class="btns"><button class="btn" id="addb">Add word</button></div>
+  <label class="f" style="margin-top:14px">Or paste many, one per line as “word : meaning” (or “word : meaning : pronunciation”). Tab-separated lines from a spreadsheet work too.<textarea id="bulk" rows="4"></textarea></label>
+  <div class="btns"><button class="btn" id="bulkb">Add pasted words to the group above</button></div>
+  <p class="sub" id="mmsg" aria-live="polite"></p><div id="gBox"></div><div id="mlist"></div>
+ </details>
+</section>
+
+<!-- PRACTICE -->
+<section id="vPlay" hidden>
+ <button class="back" id="toGroups">← Groups</button>
+ <h1 id="pTitle"></h1>
+ <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Word list</button></div>
+ <div id="mView">
+  <div class="bar"><span id="stat"></span><span id="tapHint">Tap a word to hear it</span></div>
+  <div class="prog"><i id="prog"></i></div>
+  <div class="board" id="board"></div>
+  <section class="end" id="end" hidden aria-live="polite"></section>
+ </div>
+ <div id="fView">
+  <div class="fbar"><span id="fstat" class="sub" style="margin:0"></span><label class="deckpick">Deck size <select id="fc2" class="fcSel"></select></label><button class="btn alt sm spk" id="hear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>Hear it</button></div>
+  <div class="prog"><i id="fprog"></i></div>
+  <button class="card" id="card" aria-live="polite"><div class="inner"><div class="face" id="ff"></div><div class="face backf" id="fb"></div></div></button>
+  <div class="btns" id="flipRow"><button class="btn" id="flipB" style="flex:1">Show answer</button><button class="btn alt" id="prevB" aria-label="Previous card">← Back</button><button class="btn alt" id="skipB">Skip →</button></div>
+  <div class="rate" id="rateRow" hidden><button class="r1" data-r="1">Don’t know<small>key 1</small></button><button class="r2" data-r="2">Semi-know<small>key 2</small></button><button class="r3" data-r="3">Know<small>key 3</small></button></div>
+  <p class="hint">Space flips the card. Keys 1, 2, 3 rate it. Arrow keys go back and skip.</p>
+  <section class="end" id="fEnd" hidden aria-live="polite"></section>
+ </div>
+ <div id="lView">
+  <div class="row" style="margin-top:12px"><label class="f">Search this group<input id="lq" type="search" placeholder="Find a word or meaning"></label>
+   <label class="f" style="max-width:190px">Show<select id="lf"><option value="all">All words</option><option value="0">Unrated</option><option value="1">Don’t know</option><option value="2">Semi-know</option><option value="3">Know</option></select></label></div>
+  <p class="sub" id="lstat"></p>
+  <div id="lwords"></div>
+  <div class="btns" id="lmoreRow"><button class="btn alt" id="lmore">Show more</button></div>
+ </div>
+ <p class="sub" id="vnote" hidden></p>
+</section>
+
+
+<!-- FREE LEARN: DECK LIST -->
+<section id="vFree" hidden>
+ <button class="back" data-go="">← Home</button>
+ <h1>Free Learn</h1>
+ <p class="sub">Make flashcard decks about anything: science terms, history dates, art, music, or people’s names and faces. Either side of a card can have text, a picture, or both.</p>
+ <div class="btns" style="margin-top:4px"><button class="btn" id="newDeckB">+ New deck</button><label class="btn alt">Import a deck<input type="file" id="impDeck" accept=".json,application/json" hidden></label></div>
+ <div class="panel" id="newDeckP" hidden><label class="f">Deck name<input id="ndName" placeholder="Biology: parts of a cell" maxlength="80"></label>
+  <div class="btns"><button class="btn" id="ndCreate">Create deck</button><button class="btn alt" id="ndCancel">Cancel</button></div></div>
+ <p class="sub" id="freeMsg" aria-live="polite"></p>
+ <h2>My decks</h2>
+ <div id="decks"></div>
+</section>
+
+<!-- FREE LEARN: ONE DECK -->
+<section id="vDeck" hidden>
+ <button class="back" data-go="free">← Free Learn</button>
+ <h1 id="dTitle"></h1>
+ <p class="sub" id="dInfo"></p>
+ <div class="btns" style="margin-top:0"><button class="btn alt sm" id="dRename">Rename</button><button class="btn alt sm" id="dExport">Share deck</button><button class="btn danger sm" id="dDelete">Delete deck</button></div>
+ <div id="dPracticeBox">
+  <h2>Practice</h2>
+  <div class="seg" role="group" aria-label="Practice mode"><button data-mode="match">Matching</button><button data-mode="cards">Flashcards</button><button data-mode="list">Card list</button></div>
+  <div class="row">
+   <label class="f" data-show="match" style="max-width:150px">Cards per round<input type="number" data-opt="n" min="3" max="25"></label>
+   <label class="f" data-show="cards" style="max-width:170px">Cards per deck<select class="fcSel"></select></label>
+   <label class="f" data-show="notlist">Show me<select data-opt="focus"><option value="mix">Mix, weak cards more often</option><option value="1">Only don’t know</option><option value="2">Only semi-know</option><option value="3">Only know</option><option value="0">Only unrated</option></select></label>
+   <label class="f" data-show="cards">Card front<select data-opt="dir"><option value="t">Front side first</option><option value="e">Back side first</option></select></label>
+   <label class="f" data-show="cards">Card order<select data-opt="ford"><option value="mix">Shuffled, weak cards first</option><option value="list">In deck order</option></select></label>
+  </div>
+  <div class="opts"><label>Read the front aloud in <select id="dVoice"></select></label></div>
+  <div class="btns"><button class="btn big-btn" id="dPlay">Start practicing</button></div>
+ </div>
+ <h2 id="cardsH">Cards</h2>
+ <details class="panel" id="cardEd" open><summary id="ceSum">Add a card</summary>
+  <p class="sub" id="imgNote" hidden>Pictures can’t be saved in this browser, but text cards work fine.</p>
+  <div class="cegrid">
+   <div class="ceside"><h3 class="sm">Front</h3><textarea id="ceF" rows="2" placeholder="Question, word or prompt" dir="auto"></textarea><div class="imgpick" id="ceFImg"></div></div>
+   <div class="ceside"><h3 class="sm">Back</h3><textarea id="ceB" rows="2" placeholder="Answer" dir="auto"></textarea><div class="imgpick" id="ceBImg"></div></div>
+  </div>
+  <div class="btns"><button class="btn" id="ceSave">Add card</button><button class="btn alt" id="ceCancel" hidden>Cancel editing</button></div>
+  <p class="sub" id="ceMsg" aria-live="polite"></p>
+  <details class="inner-d"><summary>Add many text cards at once</summary>
+   <label class="f" style="margin-top:10px">One card per line, as “front : back”. Tab-separated lines copied from a spreadsheet work too.<textarea id="ceBulk" rows="4" dir="auto"></textarea></label>
+   <div class="btns"><button class="btn" id="ceBulkB">Add these cards</button></div></details>
+ </details>
+ <div id="cards"></div>
+</section>
+
+<!-- STUDY BREAK -->
+<section id="vBreak" hidden>
+ <button class="back" data-go="">← Home</button>
+ <h1>Study Break</h1>
+ <p class="sub">Give your brain a different kind of workout.</p>
+ <div class="startgrid">
+  <button class="sc" data-go="break/sudoku"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></span><span class="sct">Sudoku</span><span class="scd">A fresh puzzle every time, from easy to extra hard, with pencil marks and scoring.</span><span class="scc" id="sbSud"></span></button>
+  <button class="sc" data-go="break/chess"><span class="sci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h11"/><path d="M8.5 21c0-3 1.5-4.5 3-6l-3.5-1-2 1.5-1.5-2 4-5c1-1.5 2.5-3 5-3.5l.5-1.5 1.5 2c2 1.5 3 4 3 7.5V21"/><circle cx="12" cy="8" r=".7" fill="currentColor"/></svg></span><span class="sct">Chess Puzzles</span><span class="scd">Real puzzles from Lichess, chosen by Elo rating, with a rating of your own that grows as you solve.</span><span class="scc" id="sbChess"></span></button>
+ </div>
+</section>
+
+<!-- SUDOKU -->
+<section id="vSudoku" hidden>
+ <button class="back" data-go="break">← Study Break</button>
+ <h1>Sudoku</h1>
+ <div class="row"><label class="f" style="max-width:200px">Difficulty<select id="sdDiff"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="xhard">Extra hard</option></select></label><button class="btn" id="sdNew">New puzzle</button></div>
+ <div class="gstats"><span>Score <b id="sdScore">0</b></span><span>Mistakes <b id="sdMist">0</b></span><span>Time <b id="sdTime">0:00</b></span></div>
+ <div class="sdgrid" id="sdGrid" aria-label="Sudoku board"></div>
+ <p class="gmsg" id="sdMsg" aria-live="polite"></p>
+ <div class="tog" id="sdTog" role="group" aria-label="Entry mode"><button data-sd="pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Pen<small>checks your answer</small></button><button data-sd="pencil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4L8 20H4v-4z"/><path d="M14 6l4 4"/></svg>Pencil<small>just notes</small></button></div>
+ <div class="sdpad" id="sdPad"></div>
+ <p class="hint">Tap a square, then a number. Keyboard: 1–9 to enter, arrows to move, P to switch pen and pencil, Backspace to erase. Correct numbers earn points (more on harder levels), mistakes cost 5, and finishing earns a bonus.</p>
+ <p class="sub" id="sdBest"></p>
+</section>
+
+<!-- CHESS PUZZLES -->
+<section id="vChess" hidden>
+ <button class="back" data-go="break">← Study Break</button>
+ <h1>Chess Puzzles</h1>
+ <div class="row"><label class="f" style="max-width:280px">Difficulty<select id="czLevel"></select></label><button class="btn" id="czNew">New puzzle</button></div>
+ <div class="gstats"><span>Your rating <b id="czRating">1200</b> <small id="czDelta"></small></span><span>Solved <b id="czSolved">0</b></span><span>Streak <b id="czStreak">0</b></span></div>
+ <p class="czprompt" id="czPrompt"></p>
+ <div class="czboard" id="czBoard"></div>
+ <div class="czpromo" id="czPromo" hidden></div>
+ <p class="gmsg" id="czMsg" aria-live="polite"></p>
+ <div class="btns"><button class="btn alt" id="czHint">Hint</button><button class="btn alt" id="czSol">Show solution</button><button class="btn" id="czNext" hidden>Next puzzle →</button></div>
+ <p class="sub" id="czInfo"></p>
+ <p class="hint">Tap a piece, then tap where it should go. Your rating starts at 1200 and moves up or down after each puzzle, the same way online chess ratings work. Using a hint means no rating change; a wrong move or showing the solution counts as a miss. Puzzles come from the <a href="https://database.lichess.org/" target="_blank" rel="noopener">Lichess open database</a> (public domain).</p>
+</section>
+
+<!-- ABOUT -->
+<section id="vAbout" hidden>
+ <button class="back" data-go="">← Home</button>
+ <div class="about-hero">
+  <img src="icons/icon.svg" alt="" width="88" height="88" id="aboutIcon">
+  <div><h1>Badger Vocab</h1><p class="sub" style="margin:2px 0 0">Version <span id="ver"></span></p></div>
+ </div>
+ <p class="lead">Made by <b>Iman Lloyd</b> as a gift to the University of Wisconsin-Madison Language Department.</p>
+ <!-- Disclaimer: edit or remove this line if the university officially adopts the app. -->
+ <p class="sub disclaimer">Badger Vocab is an independent project and is not affiliated with or endorsed by the University of Wisconsin-Madison.</p>
+ <div class="panel"><h3 class="sm" style="margin-top:0">What it does</h3>
+  <p>Badger Vocab helps you practice vocabulary in 48 languages with a matching game, flashcards and word lists. In Free Learn you can make your own decks about any subject, with pictures. Study Break adds Sudoku and chess puzzles for a breather. Rate each card as “don’t know,” “semi-know” or “know,” and the ones you find hardest come back more often.</p></div>
+ <div class="panel"><h3 class="sm" style="margin-top:0">Your privacy</h3>
+  <p>Your words and progress are saved only on this device. There are no accounts, and nothing you type is uploaded. The one exception is read-aloud with the Google voice: when you’re online, the word being spoken is sent to Google Translate to get the audio. Choose “Device voice only” in a language’s settings to turn that off.</p></div>
+ <div class="panel"><h3 class="sm" style="margin-top:0">Copyright and license</h3>
+  <p>© 2026 Iman Lloyd. All rights reserved except as granted by the license.</p>
+  <p>Badger Vocab is shared under the <b>PolyForm Noncommercial License 1.0.0</b>. In plain terms:</p>
+  <ul>
+   <li>Students, teachers, schools and universities may use, copy and share it for free, for any noncommercial purpose.</li>
+   <li>You may change it, but anyone who shares a copy, changed or not, must keep the license and this notice:<br><i>Required Notice: Copyright (c) 2026 Iman Lloyd. Badger Vocab was made by Iman Lloyd as a gift to the University of Wisconsin-Madison Language Department.</i></li>
+   <li>It may not be sold or used for commercial purposes without Iman Lloyd’s permission.</li>
+  </ul>
+  <p class="sub">This summary is for convenience only. The full terms are in the LICENSE.md file that comes with the app and at <span class="url">polyformproject.org/licenses/noncommercial/1.0.0</span>.</p></div>
+ <div class="panel"><h3 class="sm" style="margin-top:0">Credits</h3><p>Chess puzzles are a sample of the <a href="https://database.lichess.org/" target="_blank" rel="noopener">Lichess open puzzle database</a>, which Lichess releases into the public domain (CC0). Thank you, Lichess.</p></div>
+ <p class="sub" id="aboutList"></p>
+</section>
+
+</main>
+<footer class="foot">Made by <b>Iman Lloyd</b> as a gift to the University of Wisconsin-Madison Language Department<br><span class="cr">© 2026 Iman Lloyd · <a href="#about">About &amp; license</a></span></footer>
+<script src="data/arabic-words.js"></script>
+<script src="data/chess-puzzles.js"></script>
+<script src="app.js"></script>
+<script src="free.js"></script>
+<script src="break.js"></script>
+</body>
+</html>
